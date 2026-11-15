@@ -34,7 +34,8 @@ if (Test-Path $veSrc) {
 # 交给主脚本完成：注册计划任务 + 首次全量部署
 & (Join-Path $targetDir 'Update-EdgeIcon.ps1') -Install
 
+$mainPs1 = Join-Path $targetDir 'Update-EdgeIcon.ps1'
 Write-Host ''
 Write-Host "安装完成！脚本目录: $targetDir" -ForegroundColor Green
-Write-Host '查看运行日志: ' + (Join-Path $targetDir 'edge-icon.log') -ForegroundColor DarkGray
-Write-Host '环境自检:     powershell -ExecutionPolicy Bypass -File "' + (Join-Path $targetDir 'Update-EdgeIcon.ps1') + '" -Diagnose' -ForegroundColor DarkGray
+Write-Host ("查看运行日志: {0}" -f (Join-Path $targetDir 'edge-icon.log')) -ForegroundColor DarkGray
+Write-Host ("环境自检:     powershell -ExecutionPolicy Bypass -File `"{0}`" -Diagnose" -f $mainPs1) -ForegroundColor DarkGray
