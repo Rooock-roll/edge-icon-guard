@@ -14,7 +14,7 @@
 .PARAMETER RebuildCache 重建图标缓存（杀 explorer + 删 iconcache）
 .PARAMETER Diagnose     仅输出环境自检信息，不做任何修改
 .PARAMETER MakeIcoOnly  仅生成多尺寸 ico（不做部署）
-.PARAMETER Interval     巡检间隔（分钟），默认 15
+.PARAMETER Interval     巡检间隔（分钟），默认 30
 #>
 [CmdletBinding()]
 param(
@@ -24,7 +24,7 @@ param(
   [switch]$RebuildCache,
   [switch]$Diagnose,
   [switch]$MakeIcoOnly,
-  [int]$Interval = 15
+  [int]$Interval = 30
 )
 
 $ErrorActionPreference = 'Stop'
