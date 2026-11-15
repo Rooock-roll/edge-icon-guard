@@ -8,7 +8,7 @@ Edge 浏览器黑金主题图标自动守护工具 —— **Edge 一更新，图
 - **开始菜单磁贴** → 大磁贴、小磁贴全覆盖黑金主题
 - **Edge 更新自动跟随** → 自动探测新版本目录并重新铺设黑金磁贴
 - **跨机器通用** → 自动识别 Edge 安装位置（Stable / Beta / Dev / Canary、Program Files / Program Files (x86) / 用户级安装）
-- **自愈巡检** → 登录时 + 每 15 分钟巡检，磁贴被重置 / 缺失 / 快捷方式被覆盖都会自动修回
+- **自愈巡检** → 登录时 + 每 30 分钟巡检，磁贴被重置 / 缺失 / 快捷方式被覆盖都会自动修回
 - **零依赖** → 只需要系统自带的 Windows PowerShell 5.1，不需要装 PowerShell 7
 - **白纸修复** → 自动规避 ACL 导致的图标白纸问题
 
@@ -57,7 +57,7 @@ powershell -ExecutionPolicy Bypass -File "C:\EdgeIconGuard\Update-EdgeIcon.ps1" 
 | `-RebuildCache` | 重建图标缓存（杀 explorer + 删 iconcache_*.db） |
 | `-Diagnose` | **只输出环境自检报告，不修改任何东西** |
 | `-MakeIcoOnly` | 只从 `logo.png` 重新生成 ico |
-| `-Interval <分钟>` | 巡检间隔，默认 15 |
+| `-Interval <分钟>` | 巡检间隔，默认 30 |
 
 **出问题先跑 `-Diagnose`**，它会列出：脚本目录、权限、Edge 探测结果、所有版本目录、源文件是否齐全、计划任务状态。
 
@@ -82,7 +82,7 @@ powershell -ExecutionPolicy Bypass -File "C:\EdgeIconGuard\Update-EdgeIcon.ps1" 
 2. **ICO 副本防白纸**：将 ico 复制到 `%USERPROFILE%\EdgeBlackGoldIcon\` 并重置 ACL，快捷方式指向该副本
 3. **磁贴全版本覆盖**：遍历探测到的每个 Edge 版本目录下的 `VisualElements`，替换 `Logo.png` 和 `SmallLogo.png`；**内容一致就跳过**，不白写盘、不刷文件时间戳
 4. **变更检测**：记录上次 Edge 版本号 + 磁贴指纹（路径/大小/修改时间哈希）。版本变了、或磁贴被 Edge 重置了 → 全量替换；否则只做幂等巡检
-5. **计划任务** `EdgeBlackGoldIconWatch`：登录时触发 + 每 15 分钟巡检，以最高权限运行（磁贴写入需要管理员）
+5. **计划任务** `EdgeBlackGoldIconWatch`：登录时触发 + 每 30 分钟巡检，以最高权限运行（磁贴写入需要管理员）
 6. **缓存刷新**：有改动时发 `SHChangeNotify`，必要时杀 explorer + 删 `iconcache_*.db`
 
 ## 🔧 自定义
@@ -94,7 +94,7 @@ powershell -ExecutionPolicy Bypass -File "C:\EdgeIconGuard\Update-EdgeIcon.ps1" 
 ## ⚠️ 注意事项
 
 - 安装与磁贴写入需要**管理员权限**（写 Program Files、注册计划任务）。非管理员运行时 lnk 图标仍可替换，磁贴会失败并在日志记录一次
-- Edge 更新后最多 **15 分钟**自动恢复黑金磁贴；想立刻生效就手动跑一次 `-Force`
+- Edge 更新后最多 **30 分钟**自动恢复黑金磁贴；想立刻生效就手动跑一次 `-Force`
 - 任务栏 / 任务管理器里的小图标来自 `msedge.exe` 内嵌资源，改它会破坏数字签名，**本工具不修改**
 - 右键菜单「新建窗口 / 无痕窗口」图标保持原样
 - 脚本文件必须是 **UTF-8 with BOM** 保存，否则 Windows PowerShell 5.1 会把中文注释解析成乱码并报语法错误
