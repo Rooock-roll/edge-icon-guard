@@ -1,0 +1,5 @@
+edge-icon.log
+state.json
+*.log
+*.new
+_new_test.ps1
