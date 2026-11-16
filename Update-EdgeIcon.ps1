@@ -74,6 +74,14 @@ function Test-Admin {
   ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+# 是否在用户的交互式桌面会话里。
+# 实测：计划任务（即使 RunLevel=Highest）跑在非交互会话，SESSIONNAME 为空；
+# 用户手动运行（双击/命令行）时 SESSIONNAME 为 Console 或 RDP-Tcp#x。
+function Test-Interactive {
+  if ([string]::IsNullOrEmpty($env:SESSIONNAME)) { return $false }
+  return $true
+}
+
 # ---------- Edge 安装探测（跨机器核心） ----------
 function Get-EdgeAppBases {
   $candidates = New-Object System.Collections.Generic.List[string]
@@ -407,8 +415,13 @@ function Set-EdgeIcon {
     }
   }
 
-  # explorer 锁定 taskbar lnk 时保存会失败：重启 explorer 后按纯路径重试一次
+  # explorer 锁定 taskbar lnk 时保存会失败：交互模式下重启 explorer 后按纯路径重试一次；
+  # 计划任务后台运行时绝不杀 explorer（避免用户桌面闪现），只记日志等下次巡检
   if (-not $ProbeOnly -and $failedPaths.Count -gt 0) {
+    if (-not (Test-Interactive)) {
+      Write-Log ("lnk 保存失败 {0} 个（后台模式不重启 explorer，下轮重试）" -f $failedPaths.Count)
+      return [pscustomobject]@{ Lnks = $found; Changed = $changed; Failed = $failedMsg }
+    }
     Write-Log '部分 lnk 保存失败，重启 explorer 后重试...'
     Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 1500
@@ -439,6 +452,11 @@ function Invoke-IconRefresh {
   }
   [Win32.Native]::SHChangeNotify(0x08000000, 0x0000, [IntPtr]::Zero, [IntPtr]::Zero) # SHCNE_ASSOCCHANGED
   if ($RebuildCache) {
+    # 后台模式（计划任务）不杀 explorer；缓存刷新留给交互式手动运行
+    if (-not (Test-Interactive)) {
+      Write-Log '后台模式跳过重建缓存（请交互式运行 -RebuildCache 时再执行）'
+      return
+    }
     Write-Log '重建图标缓存: 杀 explorer -> 删 iconcache -> 重启'
     Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 1200
